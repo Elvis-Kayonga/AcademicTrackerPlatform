@@ -45,11 +45,11 @@ class AppTheme {
         foregroundColor: textPrimary,
         elevation: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: cardBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
