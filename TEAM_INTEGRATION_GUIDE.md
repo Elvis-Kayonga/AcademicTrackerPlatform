@@ -6,11 +6,11 @@
 
 ---
 
-## 🎯 Elvis's Work (COMPLETED) ✅
+## 🎯 Foundation (COMPLETED) ✅
 
-Elvis has built the complete foundation. Everything is ready for integration!
+I've built the complete foundation. Everything is ready for integration!
 
-### What Elvis Delivered:
+### What's Been Delivered:
 1. ✅ **Complete App Structure** - Navigation with 3 tabs
 2. ✅ **Full Dashboard** - All metrics, lists, and calculations
 3. ✅ **AppDataService** - Central data management with CRUD methods
@@ -26,11 +26,11 @@ Elvis has built the complete foundation. Everything is ready for integration!
 
 **Your Job:** Build assignment creation, listing, and editing
 
-**Integration with Elvis's Work:**
+**Integration:**
 ```dart
 final dataService = Provider.of<AppDataService>(context);
 
-// Add assignment - Elvis's dashboard shows it automatically!
+// Add assignment - the dashboard shows it automatically!
 dataService.addAssignment(newAssignment);
 
 // Edit assignment
@@ -49,17 +49,17 @@ dataService.toggleAssignmentCompletion(id);
 
 **Your Job:** Build session creation, calendar view, and editing
 
-**Integration with Elvis's Work:**
+**Integration:**
 ```dart
 final dataService = Provider.of<AppDataService>(context);
 
-// Add session - Elvis's dashboard shows it if it's today!
+// Add session - the dashboard shows it if it's today!
 dataService.addSession(newSession);
 
 // Edit session
 dataService.updateSession(id, updatedSession);
 
-// Elvis automatically filters and displays today's sessions
+// Dashboard automatically filters and displays today's sessions
 ```
 
 **File to Replace:** `lib/screens/schedule_screen.dart`  
@@ -71,14 +71,14 @@ dataService.updateSession(id, updatedSession);
 
 **Your Job:** Add attendance toggles and tracking UI
 
-**Integration with Elvis's Work:**
+**Integration:**
 ```dart
 final dataService = Provider.of<AppDataService>(context);
 
-// Toggle attendance - Elvis recalculates percentage automatically!
+// Toggle attendance - percentage recalculates automatically!
 dataService.toggleSessionAttendance(id);
 
-// Elvis's dashboard shows:
+// The dashboard shows:
 // - Attendance percentage (calculated)
 // - Red warning if < 75% (automatic)
 ```
@@ -92,9 +92,9 @@ dataService.toggleSessionAttendance(id);
 
 **Your Job:** Ensure visual consistency and add data persistence
 
-**Integration with Elvis's Work:**
+**Integration:**
 ```dart
-// Use Elvis's theme everywhere
+// Use the theme everywhere
 import '../utils/app_theme.dart';
 
 AppTheme.cardBackground  // For all cards
@@ -120,7 +120,7 @@ class AppDataService {
 ## 🔗 Key Integration Points
 
 ### Everyone Uses AppDataService
-Elvis created one central data service. Everyone plugs into it:
+There's one central data service. Everyone plugs into it:
 
 ```dart
 // Import this in your screens
@@ -131,7 +131,7 @@ import '../services/app_data_service.dart';
 final dataService = Provider.of<AppDataService>(context);
 ```
 
-### Everyone Uses Elvis's Theme
+### Everyone Uses the Theme
 ```dart
 import '../utils/app_theme.dart';
 
@@ -140,7 +140,7 @@ import '../utils/app_theme.dart';
 
 ### Everyone Benefits from Auto-Updates
 When you call `dataService.addAssignment()` or `dataService.addSession()`:
-- Elvis's dashboard updates automatically ✨
+- The dashboard updates automatically ✨
 - No extra code needed
 - State management handles it via Provider
 
@@ -150,8 +150,8 @@ When you call `dataService.addAssignment()` or `dataService.addSession()`:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│           Elvis's AppDataService                │
-│  (Central hub - everyone connects here)         │
+│               AppDataService                  │
+│      (Central hub - everyone connects here)     │
 └─────────────────────────────────────────────────┘
            ↑              ↑              ↑
            │              │              │
@@ -164,8 +164,8 @@ When you call `dataService.addAssignment()` or `dataService.addSession()`:
            └──────────────┴──────────────┘
                          ↓
            ┌──────────────────────────┐
-           │   Elvis's Dashboard      │
-           │ (Displays everything!)   │
+           │      Dashboard           │
+           │  (Displays everything!)  │
            └──────────────────────────┘
 ```
 
@@ -177,7 +177,7 @@ When you call `dataService.addAssignment()` or `dataService.addSession()`:
 - [ ] Clone repo and checkout `elvisbranch`
 - [ ] Run `flutter pub get`
 - [ ] Read [COLLABORATION.md](COLLABORATION.md) (YOUR section)
-- [ ] Look at Elvis's dashboard code for examples
+- [ ] Look at the dashboard code for examples
 - [ ] Test your changes frequently
 
 ### For Sash (Assignments):
@@ -185,20 +185,20 @@ When you call `dataService.addAssignment()` or `dataService.addSession()`:
 - [ ] Replace `lib/screens/assignments_screen.dart`
 - [ ] Create assignment form dialog
 - [ ] Use `dataService.addAssignment()`
-- [ ] Test: Your assignments show on Elvis's dashboard!
+- [ ] Test: Your assignments show on the dashboard!
 
 ### For Gabriel (Schedule):
 - [ ] Study `lib/models/academic_session.dart`
 - [ ] Replace `lib/screens/schedule_screen.dart`
 - [ ] Create session form dialog
 - [ ] Use `dataService.addSession()`
-- [ ] Test: Today's sessions show on Elvis's dashboard!
+- [ ] Test: Today's sessions show on the dashboard!
 
 ### For Chiagoziem (Attendance):
 - [ ] Work with Gabriel on schedule screen
 - [ ] Add attendance toggle widget
 - [ ] Use `dataService.toggleSessionAttendance()`
-- [ ] Test: Attendance % updates on Elvis's dashboard!
+- [ ] Test: Attendance % updates on the dashboard!
 
 ### For Sheryl (UI/Storage):
 - [ ] Review all screens for color consistency
@@ -212,8 +212,8 @@ When you call `dataService.addAssignment()` or `dataService.addSession()`:
 
 **Questions?** Check these in order:
 1. [COLLABORATION.md](COLLABORATION.md) - Your personalized section
-2. Elvis's code (especially `dashboard_screen.dart`)
-3. Ask Elvis or the team
+2. The dashboard code (especially `dashboard_screen.dart`)
+3. Discuss with the team
 
 **Making Changes:**
 ```bash
@@ -231,15 +231,15 @@ git push origin elvisbranch
 
 ### Your module is done when:
 - ✅ All your features work
-- ✅ Uses Elvis's `AppDataService` 
-- ✅ Uses Elvis's `AppTheme` colors
-- ✅ Data appears on Elvis's dashboard correctly
+- ✅ Uses `AppDataService` properly
+- ✅ Uses `AppTheme` colors consistently
+- ✅ Data appears on the dashboard correctly
 - ✅ No analyzer errors
 - ✅ Code is clean and commented
 - ✅ Tested on device/emulator
 
 ---
 
-**Elvis has done the hard work of integration. You just need to plug in! 🔌**
+**The foundation is ready - integrate your modules with the existing structure! 🚀**
 
-Good luck team! 🚀
+Good luck team!
