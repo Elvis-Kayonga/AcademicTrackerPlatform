@@ -9,48 +9,398 @@ This Flutter app helps ALU students manage their academic responsibilities by tr
 
 ## 👥 Team Structure
 
-### Elvis - Dashboard + Integration Lead ✅
-**Status:** COMPLETED  
-**Responsibilities:**
+### 🎯 Elvis Kayonga - Project Lead & Dashboard ✅
+**Status:** ✅ COMPLETED  
+**Your Responsibilities:**
 - ✅ Overall app structure & screen routing
-- ✅ Dashboard screen implementation
-- ✅ Data service integration
-- ✅ ALU color branding
+- ✅ Dashboard screen with all metrics
+- ✅ Central data service integration
+- ✅ ALU color branding foundation
 
-**Files Owned:**
-- `lib/main.dart` - Main app structure with BottomNavigationBar
-- `lib/screens/dashboard_screen.dart` - Complete dashboard with all metrics
-- `lib/services/app_data_service.dart` - Central data management
-- `lib/utils/app_theme.dart` - ALU brand colors and theme
+**What Elvis Has Built (Foundation for Everyone):**
+- ✅ `lib/main.dart` - Complete app navigation
+- ✅ `lib/screens/dashboard_screen.dart` - Fully functional dashboard
+- ✅ `lib/services/app_data_service.dart` - **Your teammates plug into this!**
+- ✅ `lib/utils/app_theme.dart` - ALU colors for everyone to use
+- ✅ `lib/models/` - Data models everyone shares
 
-### Teammate 2 - Assignment Management Module 📝
-**Status:** TO BE IMPLEMENTED  
-**Responsibilities:**
-- Create assignment form (title, due date, course, priority)
-- Display assignments list sorted by due date
-- Mark assignments as completed
-- Delete and edit assignments
-- Filter by priority level
+**Elvis's Dashboard Shows:**
+- Today's date & academic week (auto-calculated)
+- Today's sessions from Gabriel's module ✨
+- Upcoming assignments (7 days) from Sash's module ✨
+- Attendance % from Chiagoziem's module ✨
+- Warning when attendance < 75% (red banner)
 
-**Files to Implement:**
-- `lib/screens/assignments_screen.dart` (replace placeholder)
-- `lib/widgets/assignment_form.dart` (new)
-- `lib/widgets/assignment_list_item.dart` (new)
+---
 
-### Teammate 3 - Schedule Management Module 📅
-**Status:** TO BE IMPLEMENTED  
-**Responsibilities:**
-- Create session form (title, date, time, location, type)
-- Display weekly calendar view
-- Record attendance (Present/Absent toggle)
-- Delete and edit sessions
-- Filter by session type
+### 📝 Sash Munyankindi - Assignment Management
+**Status:** 🚧 TO BE IMPLEMENTED  
+**Your Mission:** Build the complete Assignments feature
 
-**Files to Implement:**
-- `lib/screens/schedule_screen.dart` (replace placeholder)
-- `lib/widgets/session_form.dart` (new)
-- `lib/widgets/session_calendar.dart` (new)
-- `lib/widgets/session_list_item.dart` (new)
+#### What You Need to Do:
+1. **Create Assignment Form**
+   - Title input (required)
+   - Due date picker (required)
+   - Course name input (required)
+   - Priority dropdown: High/Medium/Low
+
+2. **Assignments List View**
+   - Show all assignments sorted by due date
+   - Display priority badge (use `AppTheme.getPriorityColor()`)
+   - Show completed vs pending status
+
+3. **CRUD Operations**
+   - Mark as completed (checkbox)
+   - Edit assignment details
+   - Delete assignments
+   - Validate all required fields
+
+#### How to Integrate with Elvis's Dashboard:
+Elvis has already built `AppDataService` for you! Just use these methods:
+
+```dart
+// Get the data service (Elvis set this up)
+final dataService = Provider.of<AppDataService>(context);
+
+// CREATE - Add new assignment
+final newAssignment = Assignment(
+  id: DateTime.now().millisecondsSinceEpoch.toString(),
+  title: titleController.text,
+  courseName: courseController.text,
+  dueDate: selectedDate,
+  priority: selectedPriority, // 'High', 'Medium', 'Low'
+);
+dataService.addAssignment(newAssignment);
+// 🎉 Elvis's dashboard will AUTOMATICALLY show this!
+
+// READ - Get all assignments
+final allAssignments = dataService.assignments;
+
+// UPDATE - Edit assignment
+dataService.updateAssignment(assignmentId, updatedAssignment);
+
+// DELETE - Remove assignment
+dataService.deleteAssignment(assignmentId);
+
+// TOGGLE COMPLETED - Mark as done
+dataService.toggleAssignmentCompletion(assignmentId);
+```
+
+#### Files You'll Create:
+- Replace: `lib/screens/assignments_screen.dart`
+- Create: `lib/widgets/assignment_form_dialog.dart`
+- Create: `lib/widgets/assignment_card.dart`
+
+#### Elvis's Dashboard Integration:
+✨ When you add/edit/delete assignments, Elvis's dashboard automatically updates:
+- "Upcoming Assignments" section shows your assignments due in 7 days
+- "Pending Agents" metric shows count of incomplete assignments
+- No extra work needed - it's all connected! 🔌
+
+#### Use Elvis's Colors:
+```dart
+import '../utils/app_theme.dart';
+
+// Priority colors (Elvis already created these)
+AppTheme.getPriorityColor('High')    // Red
+AppTheme.getPriorityColor('Medium')  // Orange
+AppTheme.getPriorityColor('Low')     // Green
+
+// Card backgrounds
+AppTheme.cardBackground  // For your assignment cards
+AppTheme.accentYellow    // For action buttons
+```
+
+---
+
+### 📅 Gabriel Tuyisingize Sezibera - Academic Session Scheduling
+**Status:** 🚧 TO BE IMPLEMENTED  
+**Your Mission:** Build the Schedule & Sessions feature
+
+#### What You Need to Do:
+1. **Create Session Form**
+   - Title input (required)
+   - Date picker (required)
+   - Start time picker (required, HH:mm format)
+   - End time picker (required, must be after start time)
+   - Location input (optional)
+   - Session type dropdown: Class, Mastery Session, Study Group, PSL Meeting
+
+2. **Weekly Schedule View**
+   - Calendar or list view showing all sessions
+   - Group by date
+   - Show time ranges clearly
+   - Color-code by session type
+
+3. **CRUD Operations**
+   - Edit session details
+   - Delete/cancel sessions
+   - Validate start time < end time
+
+#### How to Integrate with Elvis's Dashboard:
+Elvis's dashboard automatically shows TODAY'S sessions! Use these methods:
+
+```dart
+// Get the data service (Elvis set this up)
+final dataService = Provider.of<AppDataService>(context);
+
+// CREATE - Add new session
+final newSession = AcademicSession(
+  id: DateTime.now().millisecondsSinceEpoch.toString(),
+  title: titleController.text,
+  date: selectedDate,
+  startTime: '09:00', // HH:mm format
+  endTime: '10:30',   // HH:mm format
+  location: locationController.text,
+  sessionType: selectedType, // 'Class', 'Mastery Session', etc.
+);
+dataService.addSession(newSession);
+// 🎉 If it's today, Elvis's dashboard shows it immediately!
+
+// READ - Get all sessions
+final allSessions = dataService.sessions;
+
+// READ - Get today's sessions (what Elvis displays)
+final todaySessions = dataService.todaysSessions;
+
+// UPDATE - Edit session
+dataService.updateSession(sessionId, updatedSession);
+
+// DELETE - Remove session
+dataService.deleteSession(sessionId);
+```
+
+#### Files You'll Create:
+- Replace: `lib/screens/schedule_screen.dart`
+- Create: `lib/widgets/session_form_dialog.dart`
+- Create: `lib/widgets/session_calendar_view.dart`
+- Create: `lib/widgets/session_card.dart`
+
+#### Elvis's Dashboard Integration:
+✨ Your sessions automatically appear on Elvis's dashboard:
+- "Today's Classes" section shows all sessions you create for today
+- Sessions display with icons based on type (Elvis already coded the icons)
+- Shows time range and location
+- Real-time updates! 🔌
+
+#### Session Type Icons (Elvis already mapped these):
+- Class → 🏫 `Icons.school`
+- Mastery Session → 🧠 `Icons.psychology`
+- Study Group → 👥 `Icons.groups`
+- PSL Meeting → 🚪 `Icons.meeting_room`
+
+---
+
+### 📊 Chiagoziem Chinyeaka Eke - Attendance Tracking
+**Status:** 🚧 TO BE IMPLEMENTED  
+**Your Mission:** Build attendance tracking & alerts
+
+#### What You Need to Do:
+1. **Attendance Toggle**
+   - Present/Absent switch for each session
+   - Works with Gabriel's sessions
+   - Can only mark attendance for past sessions
+
+2. **Automatic Calculation**
+   - Elvis already built the calculation logic in `AppDataService`!
+   - You just need to toggle attendance
+   - Formula: (attended sessions / total past sessions) × 100
+
+3. **Alert Logic**
+   - Elvis's dashboard already shows warning when < 75%
+   - You can add additional warnings in Gabriel's schedule screen
+
+4. **Attendance History**
+   - Show list of past sessions with attendance status
+   - Calculate and display statistics
+
+#### How to Integrate with Elvis's Dashboard:
+Elvis's dashboard AUTOMATICALLY calculates attendance! Just toggle it:
+
+```dart
+// Get the data service (Elvis set this up)
+final dataService = Provider.of<AppDataService>(context);
+
+// TOGGLE ATTENDANCE - Mark present/absent
+dataService.toggleSessionAttendance(sessionId);
+// 🎉 Elvis's dashboard recalculates percentage automatically!
+
+// READ - Get attendance percentage (Elvis calculates this)
+final percentage = dataService.attendancePercentage;
+
+// READ - Check if at risk (Elvis's logic)
+final atRisk = dataService.isAttendanceAtRisk; // true if < 75%
+
+// READ - Get past sessions to display history
+final pastSessions = dataService.sessions
+    .where((s) => s.isPast())
+    .toList();
+```
+
+#### Integration Points:
+**With Gabriel's Schedule Screen:**
+- Add attendance toggle to each past session
+- Show attendance status icons (✓ present, ✗ absent)
+
+**With Elvis's Dashboard:**
+✨ Your attendance toggles automatically update:
+- Attendance percentage metric
+- Red warning banner appears/disappears at 75% threshold
+- No extra work - Elvis built the calculation! 🔌
+
+#### Files You'll Create/Modify:
+- Add to: `lib/screens/schedule_screen.dart` (attendance toggle UI)
+- Create: `lib/widgets/attendance_toggle.dart`
+- Create: `lib/widgets/attendance_history_card.dart`
+
+#### Elvis's Attendance Calculation (Already Done):
+```dart
+// Elvis already wrote this in AppDataService:
+double get attendancePercentage {
+  final pastSessions = sessions.where((s) => s.isPast()).toList();
+  if (pastSessions.isEmpty) return 100.0;
+  final attendedCount = pastSessions.where((s) => s.isAttended).length;
+  return (attendedCount / pastSessions.length) * 100;
+}
+
+bool get isAttendanceAtRisk {
+  return attendancePercentage < 75; // Shows red warning
+}
+```
+
+You just toggle `isAttended`! Elvis does the rest! ✨
+
+---
+
+### 🎨 Sheryl Atieno Otieno - UI/UX & Data Storage
+**Status:** 🚧 TO BE IMPLEMENTED  
+**Your Mission:** Ensure visual consistency & add data persistence
+
+#### What You Need to Do:
+1. **Apply ALU Colors Everywhere**
+   - Elvis created `AppTheme` - you extend it to all screens
+   - Ensure Sash, Gabriel, and Chiagoziem use consistent colors
+   - Review all screens for brand compliance
+
+2. **Responsive Layouts**
+   - Test on different screen sizes
+   - Fix any pixel overflow errors
+   - Ensure proper padding and spacing
+
+3. **Form UI Consistency**
+   - All forms should look similar
+   - Clear labels and error messages
+   - Consistent button styles
+
+4. **Data Persistence**
+   - Choose storage method: SharedPreferences or SQLite
+   - Save assignments and sessions to disk
+   - Load data on app startup
+
+5. **Empty States**
+   - Design empty state messages
+   - Elvis already has some - extend to all screens
+
+#### How to Integrate with Elvis's Foundation:
+Elvis built the theme foundation - you enforce it everywhere!
+
+```dart
+// Elvis's theme is already applied globally in main.dart
+// You just need to ensure everyone uses these colors:
+
+import '../utils/app_theme.dart';
+
+// Primary colors
+AppTheme.primaryDarkBlue     // Main background
+AppTheme.accentYellow        // Buttons, highlights
+AppTheme.warningRed          // Alerts, errors
+AppTheme.cardBackground      // All cards should use this
+
+// Text colors
+AppTheme.textPrimary         // Main text (white)
+AppTheme.textSecondary       // Subtitles (gray)
+
+// Helper methods Elvis created
+AppTheme.getPriorityColor('High')      // For Sash's priorities
+AppTheme.getAttendanceColor(75.0)      // For Chiagoziem's %
+```
+
+#### Data Persistence Implementation:
+**Option 1: SharedPreferences (Simpler)**
+```dart
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+// Save assignments
+Future<void> saveAssignments(List<Assignment> assignments) async {
+  final prefs = await SharedPreferences.getInstance();
+  final jsonList = assignments.map((a) => a.toJson()).toList();
+  await prefs.setString('assignments', json.encode(jsonList));
+}
+
+// Load assignments
+Future<List<Assignment>> loadAssignments() async {
+  final prefs = await SharedPreferences.getInstance();
+  final jsonString = prefs.getString('assignments') ?? '[]';
+  final jsonList = json.decode(jsonString) as List;
+  return jsonList.map((json) => Assignment.fromJson(json)).toList();
+}
+
+// Do the same for sessions!
+```
+
+**Option 2: SQLite (More Advanced)**
+- Use `sqflite` package
+- Create tables for assignments and sessions
+- More robust for larger datasets
+
+#### Integration with Elvis's AppDataService:
+Add persistence methods to Elvis's service:
+
+```dart
+// Modify app_data_service.dart
+class AppDataService extends ChangeNotifier {
+  // ... Elvis's existing code ...
+  
+  // ADD: Load from storage on startup
+  Future<void> loadFromStorage() async {
+    _assignments = await loadAssignments();
+    _sessions = await loadSessions();
+    notifyListeners();
+  }
+  
+  // ADD: Save after every change
+  void addAssignment(Assignment assignment) {
+    _assignments.add(assignment);
+    saveAssignments(_assignments); // YOUR CODE
+    notifyListeners();
+  }
+  
+  // Update all CRUD methods to save after changes
+}
+```
+
+#### Files You'll Modify:
+- Extend: `lib/services/app_data_service.dart` (add persistence)
+- Create: `lib/services/storage_service.dart` (your storage logic)
+- Review: All screen files for UI consistency
+- Update: `pubspec.yaml` (add `shared_preferences: ^2.2.0`)
+
+#### UI Review Checklist:
+- [ ] All screens use `AppTheme.cardBackground` for cards
+- [ ] All buttons use `AppTheme.accentYellow`
+- [ ] All forms have consistent spacing (16px padding)
+- [ ] No overflow errors on small screens
+- [ ] Empty states have icons and helpful messages
+- [ ] All text uses `AppTheme.textPrimary` or `textSecondary`
+
+#### Elvis's Dashboard Already Has:
+- ✅ Proper spacing and padding
+- ✅ Empty state handling
+- ✅ Responsive layout
+- ✅ Consistent color usage
+
+Use Elvis's dashboard as your reference! Copy the same patterns! 📐
 
 ---
 
