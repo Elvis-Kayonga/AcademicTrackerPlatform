@@ -1,9 +1,13 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:alu_assistant/theme/app_theme.dart';
+import 'package:alu_assistant/services/storage_service.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/assignments_screen.dart';
 import 'screens/schedule_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await StorageService.instance.init();
   runApp(const MyApp());
 }
 
@@ -14,14 +18,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ALU Academic Assistant',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF0F1627),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1B2845),
-          elevation: 0,
-        ),
-      ),
+      theme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
       home: const MainApp(),
     );
   }
