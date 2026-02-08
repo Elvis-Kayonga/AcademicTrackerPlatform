@@ -77,9 +77,12 @@ class _AddSessionScreenState extends State<AddSessionScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFFFC107),
-              surface: Color(0xFF0F1627),
+              primary: Color(0xFF0A1929),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF1A1A2E),
             ),
+            dialogBackgroundColor: Colors.white,
           ),
           child: child!,
         );
@@ -108,8 +111,20 @@ class _AddSessionScreenState extends State<AddSessionScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFFFC107),
-              surface: Color(0xFF0F1627),
+              primary: Color(0xFF0A1929),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF1A1A2E),
+            ),
+            dialogBackgroundColor: Colors.white,
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: Colors.white,
+              hourMinuteColor: const Color(0xFFE8E8E8),
+              hourMinuteTextColor: const Color(0xFF1A1A2E),
+              dialBackgroundColor: const Color(0xFFF5F5F5),
+              dialHandColor: const Color(0xFF0A1929),
+              dialTextColor: const Color(0xFF1A1A2E),
+              entryModeIconColor: const Color(0xFF0A1929),
             ),
           ),
           child: child!,
