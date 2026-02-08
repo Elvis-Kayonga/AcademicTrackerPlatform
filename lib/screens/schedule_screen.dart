@@ -293,123 +293,194 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if session is in the past (for showing attendance toggle)
+    final now = DateTime.now();
+    final sessionDateTime = DateTime(
+      session.date.year,
+      session.date.month,
+      session.date.day,
+      int.parse(session.endTime.split(':')[0]),
+      int.parse(session.endTime.split(':')[1]),
+    );
+    final isPastSession = sessionDateTime.isBefore(now);
+
     return Card(
       color: const Color(0xFF1B2845),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        leading: SizedBox(
-          width: 50,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                session.startTime,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                session.endTime,
-                style: const TextStyle(
-                  color: Color(0xFF9E9E9E),
-                  fontSize: 10,
-                ),
-              ),
-            ],
-          ),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: isPastSession
+              ? (session.isAttended ? const Color(0xFF28A745) : const Color(0xFFDC3545))
+              : Colors.transparent,
+          width: isPastSession ? 2 : 0,
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
           children: [
-            Text(
-              session.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+            // Time Column
+            Container(
+              width: 65,
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E3D5C),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2E3D5C),
-                    borderRadius: BorderRadius.circular(4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    session.startTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  child: Text(
-                    session.type.displayName,
+                  const SizedBox(height: 2),
+                  const Text(
+                    'to',
+                    style: TextStyle(
+                      color: Color(0xFF9E9E9E),
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    session.endTime,
                     style: const TextStyle(
                       color: Color(0xFFFFC107),
-                      fontSize: 10,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            
+            // Session Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E3D5C),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      session.type.displayName,
+                      style: const TextStyle(
+                        color: Color(0xFFFFC107),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (session.location != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 16, color: Color(0xFFFFC107)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            session.location!,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            
+            // Attendance Toggle (visible for past sessions)
+            if (isPastSession)
+              GestureDetector(
+                onTap: onToggleAttendance,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: session.isAttended
+                        ? const Color(0xFF28A745).withOpacity(0.2)
+                        : const Color(0xFFDC3545).withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    session.isAttended ? Icons.check_circle : Icons.cancel,
+                    color: session.isAttended
+                        ? const Color(0xFF28A745)
+                        : const Color(0xFFDC3545),
+                    size: 28,
                   ),
                 ),
-                if (session.location != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.location_on,
-                      size: 12, color: const Color(0xFF9E9E9E)),
-                  const SizedBox(width: 4),
-                  Text(
-                    session.location!,
-                    style: const TextStyle(
-                      color: Color(0xFF9E9E9E),
-                      fontSize: 10,
+              ),
+            
+            // Menu
+            PopupMenuButton(
+              color: const Color(0xFF1B2845),
+              icon: const Icon(Icons.more_vert, color: Color(0xFF9E9E9E)),
+              itemBuilder: (context) => [
+                if (isPastSession)
+                  PopupMenuItem(
+                    child: Row(
+                      children: [
+                        Icon(
+                          session.isAttended ? Icons.cancel : Icons.check_circle,
+                          color: session.isAttended
+                              ? const Color(0xFFDC3545)
+                              : const Color(0xFF28A745),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          session.isAttended ? 'Mark Absent' : 'Mark Present',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
+                    onTap: onToggleAttendance,
                   ),
-                ],
+                PopupMenuItem(
+                  child: const Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFFFFC107), size: 18),
+                      SizedBox(width: 8),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                  onTap: onEdit,
+                ),
+                PopupMenuItem(
+                  child: const Row(
+                    children: [
+                      Icon(Icons.delete, color: Color(0xFFE53935), size: 18),
+                      SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: Color(0xFFE53935))),
+                    ],
+                  ),
+                  onTap: onDelete,
+                ),
               ],
-            ),
-          ],
-        ),
-        trailing: PopupMenuButton(
-          color: const Color(0xFF1B2845),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    session.isAttended
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: session.isAttended
-                        ? const Color(0xFFFFC107)
-                        : const Color(0xFF9E9E9E),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    session.isAttended ? 'Mark Absent' : 'Mark Present',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              onTap: onToggleAttendance,
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: const [
-                  Icon(Icons.edit, color: Color(0xFFFFC107), size: 18),
-                  SizedBox(width: 8),
-                  Text('Edit', style: TextStyle(color: Colors.white)),
-                ],
-              ),
-              onTap: onEdit,
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: const [
-                  Icon(Icons.delete, color: Color(0xFFE53935), size: 18),
-                  SizedBox(width: 8),
-                  Text('Delete', style: TextStyle(color: Color(0xFFE53935))),
-                ],
-              ),
-              onTap: onDelete,
             ),
           ],
         ),
