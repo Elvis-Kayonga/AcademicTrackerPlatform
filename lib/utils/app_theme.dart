@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 
 /// ALU Brand Colors Theme
-/// Maintains consistency across all screens
 class AppTheme {
   // Primary ALU Colors
   static const Color primaryDarkBlue = Color(0xFF0A1929);
-  static const Color secondaryNavyBlue = Color(0xFF1A2332);
+  static const Color secondaryNavyBlue = Color(0xFF1A2332);   // Dark nav blue
   static const Color accentYellow = Color(0xFFFFC107);
-  static const Color warningRed = Color(0xFFE74C3C);
+  static const Color warningRed = Color(0xFFDC3545);          // red
   static const Color warningOrange = Color(0xFFFF9800);
   
   // Additional Colors
-  static const Color cardBackground = Color(0xFF1E293B);
-  static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color(0xFFB0BEC5);
-  static const Color successGreen = Color(0xFF4CAF50);
+  static const Color cardBackground = Colors.white;           // White cards only
+  static const Color textPrimary = Color(0xFF1A1A2E);         // Dark text for white cards
+  static const Color textSecondary = Color(0xFF6C757D);       // Gray text for white cards
+  static const Color successGreen = Color(0xFF28A745);        // Better green
   
   // Status Colors
-  static const Color highPriority = Color(0xFFE74C3C);
+  static const Color highPriority = Color(0xFFDC3545);
   static const Color mediumPriority = Color(0xFFFF9800);
-  static const Color lowPriority = Color(0xFF4CAF50);
+  static const Color lowPriority = Color(0xFF28A745);
   
   // Attendance Status Colors
-  static const Color attendanceGood = Color(0xFF4CAF50); // >= 75%
-  static const Color attendanceWarning = Color(0xFFFF9800); // 65-74%
-  static const Color attendanceDanger = Color(0xFFE74C3C); // < 65%
+  static const Color attendanceGood = Color(0xFF28A745);      // >= 75%
+  static const Color attendanceWarning = Color(0xFFFF9800);   // 65-74%
+  static const Color attendanceDanger = Color(0xFFDC3545);    // < 65%
 
   static ThemeData get darkTheme {
     return ThemeData(
