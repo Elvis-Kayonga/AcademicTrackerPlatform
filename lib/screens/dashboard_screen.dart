@@ -85,11 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildAttendanceCard(),
                     const SizedBox(height: 16),
                     
-                    // Attendance by Type
-                    if (_stats != null && _stats!.byType.isNotEmpty)
-                      _buildAttendanceByType(),
-                    const SizedBox(height: 16),
-                    
                     // Today's Sessions
                     _buildTodaysSessions(),
                     const SizedBox(height: 16),
@@ -210,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     value: stats.totalSessions > 0 ? percentage / 100 : 0,
                     strokeWidth: 12,
                     backgroundColor: Colors.grey.shade300,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentYellow),
                   ),
                 ),
                 Column(
@@ -218,8 +213,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       '${percentage.toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        color: color,
+                      style: const TextStyle(
+                        color: Color(0xFF0F1627),
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -242,12 +237,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: const Color(0xFF0F1627).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              stats.statusMessage,
-              style: TextStyle(color: color, fontWeight: FontWeight.w500),
+            child: const Text(
+              'Keep up with the attendance!',
+              style: TextStyle(color: Color(0xFF0F1627), fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ),
@@ -260,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildStatItem(
                 'Attended',
                 stats.attendedSessions.toString(),
-                AppTheme.successGreen,
+                AppTheme.accentYellow,
                 Icons.check_circle,
               ),
               Container(width: 1, height: 40, color: Colors.grey.shade300),
@@ -302,72 +297,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
         ),
       ],
-    );
-  }
-
-  Widget _buildAttendanceByType() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Attendance by Session Type',
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ..._stats!.byType.entries.map((entry) {
-            final typeStats = entry.value;
-            final color = AppTheme.getAttendanceColor(typeStats.percentage);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        typeStats.typeName,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                      ),
-                      Text(
-                        '${typeStats.attended}/${typeStats.total} (${typeStats.percentage.toStringAsFixed(0)}%)',
-                        style: TextStyle(color: color, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: typeStats.total > 0 ? typeStats.percentage / 100 : 0,
-                      backgroundColor: Colors.grey.shade300,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                      minHeight: 6,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
     );
   }
 
@@ -476,7 +405,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         border: Border(
           left: BorderSide(
             width: 3,
-            color: session.isAttended ? AppTheme.successGreen : Colors.grey,
+            color: session.isAttended ? AppTheme.accentYellow : Colors.grey,
           ),
         ),
       ),
