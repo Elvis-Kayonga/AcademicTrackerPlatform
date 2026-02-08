@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/session.dart';
+import '../models/attendance_stats.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -110,5 +111,158 @@ class DatabaseHelper {
 
   Future<void> close() async {
     _database?.close();
+  }
+  
+
+  /// Get overall attendance statistics
+  Future<AttendanceStats> getAttendanceStats() async {
+    final db = await database;
+    final now = DateTime.now();
+    
+    // Only count past sessions (sessions that have already occurred)
+    final maps = await db.query(
+      'sessions',
+      where: 'date < ?',
+      whereArgs: [now.toIso8601String()],
+    );
+
+    if (maps.isEmpty) {
+      return AttendanceStats.empty();
+    }
+
+    final sessions = List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+    final totalSessions = sessions.length;
+    final attendedSessions = sessions.where((s) => s.isAttended).length;
+    final missedSessions = totalSessions - attendedSessions;
+    final attendancePercentage = totalSessions > 0 
+        ? (attendedSessions / totalSessions) * 100 
+        : 0.0;
+
+    // Group by session type
+    final byType = <String, SessionTypeAttendance>{};
+    final typeGroups = <SessionType, List<Session>>{};
+    
+    for (final session in sessions) {
+      typeGroups.putIfAbsent(session.type, () => []).add(session);
+    }
+
+    for (final entry in typeGroups.entries) {
+      final typeSessions = entry.value;
+      final typeTotal = typeSessions.length;
+      final typeAttended = typeSessions.where((s) => s.isAttended).length;
+      final typePercentage = typeTotal > 0 ? (typeAttended / typeTotal) * 100 : 0.0;
+      
+      byType[entry.key.displayName] = SessionTypeAttendance(
+        typeName: entry.key.displayName,
+        total: typeTotal,
+        attended: typeAttended,
+        percentage: typePercentage,
+      );
+    }
+
+    return AttendanceStats(
+      totalSessions: totalSessions,
+      attendedSessions: attendedSessions,
+      missedSessions: missedSessions,
+      attendancePercentage: attendancePercentage,
+      byType: byType,
+    );
+  }
+
+  /// Get attendance stats for a specific date range
+  Future<AttendanceStats> getAttendanceStatsForRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final db = await database;
+    
+    final maps = await db.query(
+      'sessions',
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
+    );
+
+    if (maps.isEmpty) {
+      return AttendanceStats.empty();
+    }
+
+    final sessions = List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+    final totalSessions = sessions.length;
+    final attendedSessions = sessions.where((s) => s.isAttended).length;
+    final missedSessions = totalSessions - attendedSessions;
+    final attendancePercentage = totalSessions > 0 
+        ? (attendedSessions / totalSessions) * 100 
+        : 0.0;
+
+    // Group by session type
+    final byType = <String, SessionTypeAttendance>{};
+    final typeGroups = <SessionType, List<Session>>{};
+    
+    for (final session in sessions) {
+      typeGroups.putIfAbsent(session.type, () => []).add(session);
+    }
+
+    for (final entry in typeGroups.entries) {
+      final typeSessions = entry.value;
+      final typeTotal = typeSessions.length;
+      final typeAttended = typeSessions.where((s) => s.isAttended).length;
+      final typePercentage = typeTotal > 0 ? (typeAttended / typeTotal) * 100 : 0.0;
+      
+      byType[entry.key.displayName] = SessionTypeAttendance(
+        typeName: entry.key.displayName,
+        total: typeTotal,
+        attended: typeAttended,
+        percentage: typePercentage,
+      );
+    }
+
+    return AttendanceStats(
+      totalSessions: totalSessions,
+      attendedSessions: attendedSessions,
+      missedSessions: missedSessions,
+      attendancePercentage: attendancePercentage,
+      byType: byType,
+    );
+  }
+
+  /// Get attendance history (past sessions) ordered by date
+  Future<List<Session>> getAttendanceHistory({int? limit}) async {
+    final db = await database;
+    final now = DateTime.now();
+    
+    final maps = await db.query(
+      'sessions',
+      where: 'date < ?',
+      whereArgs: [now.toIso8601String()],
+      orderBy: 'date DESC, startTime DESC',
+      limit: limit,
+    );
+    
+    return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+  }
+
+  /// Get today's sessions
+  Future<List<Session>> getTodaySessions() async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    
+    return getSessionsByDate(startOfDay);
+  }
+
+  /// Get upcoming sessions (future sessions)
+  Future<List<Session>> getUpcomingSessions({int? limit}) async {
+    final db = await database;
+    final now = DateTime.now();
+    
+    final maps = await db.query(
+      'sessions',
+      where: 'date >= ?',
+      whereArgs: [now.toIso8601String()],
+      orderBy: 'date ASC, startTime ASC',
+      limit: limit,
+    );
+    
+    return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
   }
 }
