@@ -309,12 +309,6 @@ class _SessionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: isPastSession
-              ? (session.isAttended ? const Color(0xFF28A745) : const Color(0xFFDC3545))
-              : Colors.transparent,
-          width: isPastSession ? 2 : 0,
-        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
