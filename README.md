@@ -1,115 +1,115 @@
-﻿# 🎓 ALU Academic Tracker Platform
+﻿# Student Academic Platform
 
-A mobile application that serves as a personal academic assistant for African Leadership University (ALU) students. Helps manage coursework, track schedules, and monitor academic engagement.
+Because missing a deadline at 11:59 PM shouldn't be a rite of passage.
 
-## 📱 Features
+## The Problem
 
-### ✅ Dashboard (Implemented by Elvis)
-- **Date & Academic Week Display** - Shows current date and semester week
-- **Today's Classes** - List of all scheduled sessions for today
-- **Upcoming Assignments** - Assignments due in the next 7 days
-- **Attendance Tracking** - Visual attendance percentage with warning when < 75%
-- **Academic Metrics** - Active projects, code factors, and pending agents count
+At ALU, students juggle multiple courses, mastery sessions, PSL meetings, and study groups across each trimester. Most solutions are Google Calendar, Canvas. Physical planners don't quite fit how ALU's academic system works. Students often realize at 10 PM that they had a submission due at midnight, show up to empty classrooms due to schedule confusion, or receive attendance warnings without understanding how it happened.
 
-### ✅ Schedule Management (Implemented by Gabriel)
-- **Create Sessions** - Academic sessions with date, time, location
-- **Weekly Calendar View** - Day-grouped display with session sorting
-- **Attendance Tracking** - Present/Absent toggle for each session
-- **Session Types** - Class, Mastery Session, Study Group, PSL Meeting
-- **Session Management** - Edit and delete sessions with confirmation
-- **Time Validation** - Start < End with error messaging
-- **Persistent Storage** - SQLite database for offline access
+This app addresses those pain points.
 
-### 📝 Assignment Management (In Progress)
-- Create, edit, and delete assignments
-- Set priority levels (High/Medium/Low)
+## What It Does
+
+### Dashboard
+Open the app and immediately see:
+- Today's scheduled sessions
+- Assignments due within the next seven days
+- Current attendance percentage with visual warning if below 75%
+- Summary count of pending assignments
+
+### Assignment Tracker
+- Add assignments with title, due date, course name, and priority level
+- View all assignments sorted by due date
 - Mark assignments as completed
-- Filter and sort by due date
-- Course-based organization
+- Edit or delete assignments as needed
 
-## 🚀 Quick Start
+### Schedule Manager
+- Schedule academic sessions (classes, mastery sessions, study groups, PSL meetings)
+- Input date, time, location, and session type
+- Record attendance with Present/Absent toggle
+- View weekly schedule of all sessions
+- Edit or remove scheduled sessions
 
-\\\ash
-# Clone the repository
+### Attendance Tracking
+- Automatic attendance percentage calculation
+- Alert system when attendance approaches 75%
+- Attendance history for reference
+
+## Technical Architecture
+
+**Stack:**
+- Framework: Flutter
+- Language: Dart
+- State Management: setState (StatefulWidgets)
+- Data Persistence: SQLite (sqflite)
+- Navigation: BottomNavigationBar (Dashboard, Schedule, Attendance History)
+
+
+**Design Approach:**
+Provider manages application state, notifying UI components of data changes. SharedPreferences handles local data persistence, ensuring information survives app restarts. The architecture prioritizes simplicity and offline functionality.
+
+## Setup Instructions
+
+**Prerequisites:**
+- Flutter SDK installed
+- IDE (VS Code or Android Studio)
+- Emulator or physical device
+
+**Installation:**
+```bash
+# Clone repository
 git clone https://github.com/Elvis-Kayonga/AcademicTrackerPlatform.git
 cd AcademicTrackerPlatform
 
 # Install dependencies
 flutter pub get
 
-# Run the app
+# Run application
 flutter run
-\\\
+```
 
-## 📂 Project Structure
+**Troubleshooting:**
+```bash
+flutter doctor
+```
 
-\\\
-lib/
-├── main.dart                      # App entry point with BottomNavigationBar
-├── models/
-│   ├── session.dart               # Session data model [GABRIEL]
-│   ├── assignment.dart            # Assignment data model
-│   └── academic_session.dart      # Academic session model
-├── database/
-│   └── database_helper.dart       # SQLite operations [GABRIEL]
-├── screens/
-│   ├── dashboard_screen.dart      # Main dashboard [ELVIS - COMPLETE]
-│   ├── schedule_screen.dart       # Schedule module [GABRIEL - COMPLETE]
-│   └── assignments_screen.dart    # Assignments module [IN PROGRESS]
-├── services/
-│   └── app_data_service.dart      # Central data management
-└── utils/
-    └── app_theme.dart             # ALU brand colors & theme
-\\\
+## Contributing
 
-## 🎨 ALU Brand Colors
+This project is built by ALU students for ALU students. Contributions are welcome.
 
-- **Primary Navy**: #0F1627 - Main background
-- **Card Surface**: #1B2845 - Card containers
-- **Accent Yellow**: #FFC107 - Primary actions & highlights
-- **Warning Red**: #E53935 - Alerts & high priority items
-- **Text White**: #FFFFFF - Primary text
-- **Secondary Grey**: #9E9E9E - Secondary text
+**Process:**
 
-## 👥 Team Members
+1. Fork the repository
+2. Create a feature branch:
+```bash
+   git checkout -b feature/your-feature-name
+```
+3. Implement changes and test thoroughly
+4. Commit with descriptive message:
+```bash
+   git commit -m "Add: feature description"
+```
+5. Push and open Pull Request
 
-- **Elvis** - Dashboard + Integration (COMPLETED)
-  - Feature Branch: \elvisbranch\ → Merged to \main\
-- **Gabriel Tuyisingize Sezibera** - Schedule & Sessions Management (COMPLETED)
-  - Feature Branch: \Seziberagabriel\ → Merged to \main\
-  - Session CRUD, time validation, SQLite persistence
-- **Teammates** - Assignments Management (IN PROGRESS)
-
-## 📦 Dependencies
-
-- \lutter\ - UI framework
-- \provider\ (^6.1.1) - State management
-- \sqflite\ (^2.3.0) - SQLite database [GABRIEL]
-- \intl\ (^0.19.0) - Date formatting
-- \path\ (^1.8.3) - File path utilities [GABRIEL]
-
-## 🧪 Testing
-
-\\\ash
-flutter test          # Run tests
-flutter analyze       # Check for issues
-\\\
-
-## 🔗 Branches
-
-**Main Branch:** \main\ (stable)  
-**Feature Branches:**
-- \Seziberagabriel\ - Schedule Tab (✅ Merged)
-- \elvisbranch\ - Dashboard (✅ Merged)
-
-**Status:** Dashboard & Schedule modules complete, ready for Assignments integration
-
-## 📞 Support
-
-For questions or issues, contact team lead:
-- Elvis (Dashboard)
+**Contribution Guidelines:**
+- Follow Flutter/Dart conventions
+- Comment code for clarity
+- Test on both iOS and Android when possible
+- Keep commits focused on single features or fixes
+- Ensure no pixel overflow errors in UI
 
 
-**Last Updated:** February 5, 2026  
-**Version:** 1.0.0  
-**Repository:** https://github.com/Elvis-Kayonga/AcademicTrackerPlatform
+## Team
+
+Developed by Group 33  
+| Team Member | Role |
+|-------------|------|
+| Elvis Kayonga | Project Lead & Dashboard |
+| Sash Munyankindi | Assignment Management |
+| Gabriel Tuyisingize Sezibera | Academic Session Scheduling |
+| Chiagoziem Eke | Attendance Tracking (Logic and Alerts) |
+| Sheryl Atieno Otieno | UI/UX & Data Storage |
+
+## License
+
+MIT License - Open source for educational use.
