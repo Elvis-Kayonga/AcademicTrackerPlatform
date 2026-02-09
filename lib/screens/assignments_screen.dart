@@ -495,13 +495,13 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.cardBackground,
+          color: AppTheme.secondaryNavyBlue,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -514,37 +514,47 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                   child: Text(
                     assignment.courseName,
                     style: const TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: Colors.white70,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _toggleCompletion(assignment),
-                  icon: Icon(
-                    assignment.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: assignment.isCompleted
-                        ? AppTheme.successGreen
-                        : AppTheme.textSecondary,
-                  ),
-                  tooltip: assignment.isCompleted ? 'Mark incomplete' : 'Mark completed',
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: priorityColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    assignment.priority.toUpperCase(),
-                    style: TextStyle(
-                      color: priorityColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.6,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _toggleCompletion(assignment),
+                      icon: Icon(
+                        assignment.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                        color: assignment.isCompleted
+                            ? AppTheme.successGreen
+                            : Colors.white54,
+                      ),
+                      tooltip: assignment.isCompleted ? 'Mark incomplete' : 'Mark completed',
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      padding: EdgeInsets.zero,
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: priorityColor.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        assignment.priority.toUpperCase(),
+                        style: TextStyle(
+                          color: priorityColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -552,11 +562,13 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
             Text(
               assignment.title,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 decoration: assignment.isCompleted ? TextDecoration.lineThrough : null,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
             Row(
@@ -566,26 +578,35 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                   size: 16,
                   color: isOverdue
                       ? AppTheme.warningRed
-                      : (isDueSoon ? AppTheme.warningOrange : AppTheme.textSecondary),
+                    : (isDueSoon ? AppTheme.warningOrange : Colors.white60),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  isOverdue ? 'Overdue • $dueDate' : 'Due $dueDate',
-                  style: TextStyle(
-                    color: isOverdue
-                        ? AppTheme.warningRed
-                        : (isDueSoon ? AppTheme.warningOrange : AppTheme.textSecondary),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    isOverdue ? 'Overdue • $dueDate' : 'Due $dueDate',
+                    style: TextStyle(
+                      color: isOverdue
+                          ? AppTheme.warningRed
+                          : (isDueSoon ? AppTheme.warningOrange : Colors.white60),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
-                _buildStatusPill(assignment.isCompleted),
-                IconButton(
-                  onPressed: () => _deleteAssignment(assignment),
-                  icon: const Icon(Icons.delete, size: 18),
-                  color: AppTheme.warningRed,
-                  tooltip: 'Delete assignment',
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStatusPill(assignment.isCompleted),
+                    IconButton(
+                      onPressed: () => _deleteAssignment(assignment),
+                      icon: const Icon(Icons.delete, size: 18),
+                      color: AppTheme.warningRed,
+                      tooltip: 'Delete assignment',
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
                 ),
               ],
             ),
