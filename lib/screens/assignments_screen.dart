@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/assignment.dart';
+import 'package:intl/intl.dart';
+
 import '../database/database_helper.dart';
+import '../models/assignment.dart';
 import '../utils/app_theme.dart';
 import 'assignment_form_screen.dart';
 
@@ -11,22 +13,25 @@ class AssignmentsScreen extends StatefulWidget {
   State<AssignmentsScreen> createState() => _AssignmentsScreenState();
 }
 
-class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTickerProviderStateMixin {
+class _AssignmentsScreenState extends State<AssignmentsScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  final List<String> _filters = const ['All', 'Due Soon', 'High', 'Completed'];
+
+  String _activeFilter = 'All';
+  String _searchQuery = '';
   List<Assignment> _allAssignments = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _loadAssignments();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -89,7 +94,7 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
         !assignment.isCompleted,
       );
       _loadAssignments();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -139,7 +144,7 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
       try {
         await _dbHelper.deleteAssignment(assignment.id);
         _loadAssignments();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -161,74 +166,49 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
     }
   }
 
-  List<Assignment> _getFilteredAssignments(int tabIndex) {
-    switch (tabIndex) {
-      case 0: // All
-        return _allAssignments;
-      case 1: // Formative (we'll use this for pending assignments)
-        return _allAssignments.where((a) => !a.isCompleted).toList();
-      case 2: // Summative (we'll use this for completed assignments)
-        return _allAssignments.where((a) => a.isCompleted).toList();
-      default:
-        return _allAssignments;
-    }
-  }
+  List<Assignment> get _filteredAssignments {
+    final query = _searchQuery.toLowerCase();
 
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
-      case 'High':
-        return AppTheme.highPriority;
-      case 'Medium':
-        return AppTheme.mediumPriority;
-      case 'Low':
-        return AppTheme.lowPriority;
-      default:
-        return AppTheme.mediumPriority;
-    }
-  }
+    return _allAssignments.where((assignment) {
+      final matchesQuery = query.isEmpty ||
+          assignment.title.toLowerCase().contains(query) ||
+          assignment.courseName.toLowerCase().contains(query);
 
-  String _formatDueDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final dueDate = DateTime(date.year, date.month, date.day);
-    final difference = dueDate.difference(today).inDays;
+      bool matchesFilter = true;
+      if (_activeFilter == 'Due Soon') {
+        matchesFilter = assignment.isDueSoon() && !assignment.isCompleted;
+      } else if (_activeFilter == 'High') {
+        matchesFilter = assignment.priority.toLowerCase() == 'high' && !assignment.isCompleted;
+      } else if (_activeFilter == 'Completed') {
+        matchesFilter = assignment.isCompleted;
+      }
 
-    if (difference == 0) {
-      return 'Due Today';
-    } else if (difference == 1) {
-      return 'Due Tomorrow';
-    } else if (difference < 0) {
-      return 'Overdue';
-    } else {
-      return 'Due ${date.day}/${date.month}/${date.year}';
-    }
+      return matchesQuery && matchesFilter;
+    }).toList()
+      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
   }
 
   @override
   Widget build(BuildContext context) {
+    final pendingCount = _allAssignments.where((a) => !a.isCompleted).length;
+    final dueSoonCount = _allAssignments.where((a) => a.isDueSoon() && !a.isCompleted).length;
+    final completedCount = _allAssignments.where((a) => a.isCompleted).length;
+
     return Scaffold(
       backgroundColor: AppTheme.primaryDarkBlue,
       appBar: AppBar(
         backgroundColor: AppTheme.secondaryNavyBlue,
         title: const Text(
           'Assignments',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.accentYellow,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: AppTheme.accentYellow,
-          onTap: (index) {
-            setState(() {}); // Refresh to show filtered data
-          },
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-          ],
-        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _loadAssignments,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -236,7 +216,26 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
                 color: AppTheme.accentYellow,
               ),
             )
-          : _buildAssignmentsList(),
+          : RefreshIndicator(
+              onRefresh: _loadAssignments,
+              color: AppTheme.accentYellow,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeroHeader(pendingCount, dueSoonCount),
+                    const SizedBox(height: 16),
+                    _buildQuickStats(pendingCount, dueSoonCount, completedCount),
+                    const SizedBox(height: 20),
+                    _buildSearchAndFilters(),
+                    const SizedBox(height: 16),
+                    _buildAssignmentsSection(),
+                  ],
+                ),
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddAssignment,
         backgroundColor: AppTheme.accentYellow,
@@ -248,70 +247,72 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
     );
   }
 
-  Widget _buildAssignmentsList() {
-    return TabBarView(
-      controller: _tabController,
-      children: List.generate(3, (index) {
-        final filteredAssignments = _getFilteredAssignments(index);
-        
-        if (filteredAssignments.isEmpty) {
-          return _buildEmptyState(index);
-        }
-
-        return RefreshIndicator(
-          onRefresh: _loadAssignments,
-          color: AppTheme.accentYellow,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: filteredAssignments.length,
-            itemBuilder: (context, idx) {
-              final assignment = filteredAssignments[idx];
-              return _buildAssignmentCard(assignment);
-            },
+  Widget _buildHeroHeader(int pendingCount, int dueSoonCount) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1B2845),
+            const Color(0xFF24365F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildEmptyState(int tabIndex) {
-    String message;
-    IconData icon;
-    
-    switch (tabIndex) {
-      case 0:
-        message = 'No assignments yet\nTap + to create one';
-        icon = Icons.assignment;
-        break;
-      case 1:
-        message = 'No pending assignments\nYou\'re all caught up!';
-        icon = Icons.check_circle_outline;
-        break;
-      case 2:
-        message = 'No completed assignments yet\nKeep working!';
-        icon = Icons.assignment_turned_in;
-        break;
-      default:
-        message = 'No assignments';
-        icon = Icons.assignment;
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        ],
+      ),
+      child: Row(
         children: [
-          Icon(
-            icon,
-            size: 64,
-            color: AppTheme.accentYellow.withOpacity(0.5),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.accentYellow.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.assignment_rounded,
+              color: AppTheme.accentYellow,
+              size: 28,
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Stay ahead',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$pendingCount pending • $dueSoonCount due soon',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Focus on the next 48 hours to keep momentum.',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -319,171 +320,295 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> with SingleTicker
     );
   }
 
-  Widget _buildAssignmentCard(Assignment assignment) {
-    final isOverdue = assignment.isOverdue();
-    final isDueSoon = assignment.isDueSoon() && !assignment.isCompleted;
+  Widget _buildQuickStats(int pendingCount, int dueSoonCount, int completedCount) {
+    return Row(
+      children: [
+        _buildStatCard('Pending', pendingCount.toString(), Icons.timelapse, AppTheme.accentYellow),
+        const SizedBox(width: 12),
+        _buildStatCard('Due Soon', dueSoonCount.toString(), Icons.bolt, AppTheme.warningOrange),
+        const SizedBox(width: 12),
+        _buildStatCard('Done', completedCount.toString(), Icons.check_circle, AppTheme.successGreen),
+      ],
+    );
+  }
 
-    return Card(
-      color: AppTheme.cardBackground,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isOverdue && !assignment.isCompleted
-              ? AppTheme.warningRed.withOpacity(0.5)
-              : Colors.transparent,
-          width: 2,
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.secondaryNavyBlue,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
-      child: InkWell(
-        onTap: () => _navigateToEditAssignment(assignment),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Completion Checkbox
-                  InkWell(
-                    onTap: () => _toggleCompletion(assignment),
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: assignment.isCompleted
-                            ? AppTheme.successGreen
-                            : Colors.transparent,
-                        border: Border.all(
-                          color: assignment.isCompleted
-                              ? AppTheme.successGreen
-                              : AppTheme.textSecondary,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: assignment.isCompleted
-                          ? const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: Colors.white,
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  
-                  // Title and Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          assignment.title,
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            decoration: assignment.isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          assignment.courseName,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+    );
+  }
 
-                  // Priority Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getPriorityColor(assignment.priority).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _getPriorityColor(assignment.priority),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      assignment.priority,
-                      style: TextStyle(
-                        color: _getPriorityColor(assignment.priority),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Due Date and Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: isOverdue && !assignment.isCompleted
-                            ? AppTheme.warningRed
-                            : isDueSoon
-                                ? AppTheme.warningOrange
-                                : AppTheme.textSecondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _formatDueDate(assignment.dueDate),
-                        style: TextStyle(
-                          color: isOverdue && !assignment.isCompleted
-                              ? AppTheme.warningRed
-                              : isDueSoon
-                                  ? AppTheme.warningOrange
-                                  : AppTheme.textSecondary,
-                          fontSize: 14,
-                          fontWeight: isOverdue || isDueSoon
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  // Action Buttons
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        color: AppTheme.accentYellow,
-                        onPressed: () => _navigateToEditAssignment(assignment),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.delete, size: 20),
-                        color: AppTheme.warningRed,
-                        onPressed: () => _deleteAssignment(assignment),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+  Widget _buildSearchAndFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _searchController,
+          onChanged: (value) => setState(() => _searchQuery = value),
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Search assignments or courses',
+            hintStyle: const TextStyle(color: Colors.white54),
+            prefixIcon: const Icon(Icons.search, color: Colors.white54),
+            filled: true,
+            fillColor: AppTheme.secondaryNavyBlue,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
           ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _filters.map((filter) {
+            final isActive = filter == _activeFilter;
+            return ChoiceChip(
+              label: Text(filter),
+              selected: isActive,
+              onSelected: (_) => setState(() => _activeFilter = filter),
+              selectedColor: AppTheme.accentYellow,
+              labelStyle: TextStyle(
+                color: isActive ? AppTheme.primaryDarkBlue : Colors.white70,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              ),
+              backgroundColor: AppTheme.secondaryNavyBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssignmentsSection() {
+    final assignments = _filteredAssignments;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Assignments',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '${assignments.length} items',
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (assignments.isEmpty)
+          _buildEmptyState()
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: assignments.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => _buildAssignmentCard(assignments[index]),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryNavyBlue,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inbox_outlined,
+            color: AppTheme.accentYellow.withOpacity(0.6),
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'No assignments match your filters',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Try clearing the search or switching filters.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssignmentCard(Assignment assignment) {
+    final dueDate = DateFormat('MMM d').format(assignment.dueDate);
+    final isOverdue = assignment.isOverdue();
+    final isDueSoon = assignment.isDueSoon();
+    final priorityColor = AppTheme.getPriorityColor(assignment.priority);
+
+    return InkWell(
+      onTap: () => _navigateToEditAssignment(assignment),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    assignment.courseName,
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _toggleCompletion(assignment),
+                  icon: Icon(
+                    assignment.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: assignment.isCompleted
+                        ? AppTheme.successGreen
+                        : AppTheme.textSecondary,
+                  ),
+                  tooltip: assignment.isCompleted ? 'Mark incomplete' : 'Mark completed',
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: priorityColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    assignment.priority.toUpperCase(),
+                    style: TextStyle(
+                      color: priorityColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              assignment.title,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                decoration: assignment.isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  isOverdue ? Icons.error : Icons.calendar_today,
+                  size: 16,
+                  color: isOverdue
+                      ? AppTheme.warningRed
+                      : (isDueSoon ? AppTheme.warningOrange : AppTheme.textSecondary),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isOverdue ? 'Overdue • $dueDate' : 'Due $dueDate',
+                  style: TextStyle(
+                    color: isOverdue
+                        ? AppTheme.warningRed
+                        : (isDueSoon ? AppTheme.warningOrange : AppTheme.textSecondary),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                _buildStatusPill(assignment.isCompleted),
+                IconButton(
+                  onPressed: () => _deleteAssignment(assignment),
+                  icon: const Icon(Icons.delete, size: 18),
+                  color: AppTheme.warningRed,
+                  tooltip: 'Delete assignment',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusPill(bool isCompleted) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: (isCompleted ? AppTheme.successGreen : AppTheme.warningOrange).withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        isCompleted ? 'COMPLETED' : 'IN PROGRESS',
+        style: TextStyle(
+          color: isCompleted ? AppTheme.successGreen : AppTheme.warningOrange,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.6,
         ),
       ),
     );
