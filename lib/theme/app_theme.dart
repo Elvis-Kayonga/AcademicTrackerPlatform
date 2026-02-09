@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:alu_assistant/theme/app_colors.dart';
 
+/// Main theme configuration for the ALU Academic Assistant application.
+/// 
+/// This class provides a centralized dark theme with consistent styling
+/// across all UI components including buttons, inputs, text, and navigation.
 class AppTheme {
+  /// Returns the dark theme for the application.
+  /// 
+  /// The theme uses a navy blue primary color with yellow accents,
+  /// providing a modern and accessible dark mode experience.
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: AppColors.primaryNavy,
       scaffoldBackgroundColor: AppColors.primaryNavy,
+      useMaterial3: true,
       colorScheme: ColorScheme.dark(
         primary: AppColors.accentYellow,
         secondary: AppColors.accentYellow,
@@ -176,6 +185,95 @@ class AppTheme {
 
   // Prevent instantiation
   AppTheme._();
+
+  /// Get elevated button theme data for consistent button styling
+  static ElevatedButtonThemeData _elevatedButtonTheme() {
+    return ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.accentYellow,
+        foregroundColor: AppColors.primaryNavy,
+        elevation: 0,
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  /// Get text theme data with responsive typography
+  static TextTheme _buildTextTheme() {
+    return TextTheme(
+      displayLarge: TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        height: 1.2,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        height: 1.2,
+      ),
+      displaySmall: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        height: 1.3,
+      ),
+      headlineLarge: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.3,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.4,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.4,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 16,
+        color: AppColors.textPrimary,
+        height: 1.5,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        height: 1.5,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: AppColors.textSecondary,
+        height: 1.5,
+      ),
+      labelLarge: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textPrimary,
+        height: 1.4,
+      ),
+      labelMedium: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textSecondary,
+        height: 1.4,
+      ),
+      labelSmall: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textMuted,
+        height: 1.5,
+      ),
+    );
+  }
 }
 
 /// Common padding and spacing constants for consistency
