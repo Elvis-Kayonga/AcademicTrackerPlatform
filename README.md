@@ -48,6 +48,11 @@ Open the app and immediately see:
 **Design Approach:**
 Provider manages application state, notifying UI components of data changes. SharedPreferences handles local data persistence, ensuring information survives app restarts. The architecture prioritizes simplicity and offline functionality.
 
+**Widget Architecture:**
+The app uses a modular widget system with reusable components. See detailed documentation:
+- [Widget Implementation Documentation](WIDGET_DOCUMENTATION.md) - Complete technical guide
+- [Presentation Guide](PRESENTATION_GUIDE.md) - Quick reference for presentations
+
 ## Setup Instructions
 
 **Prerequisites:**
