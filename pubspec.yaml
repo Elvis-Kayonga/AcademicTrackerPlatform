@@ -1,11 +1,11 @@
 ﻿name: alu_assistant
 description: "ALU Academic Assistant - Session Scheduling and Assignment Tracking."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.4
+  sdk: ^3.0.0
 
 dependencies:
   flutter:
