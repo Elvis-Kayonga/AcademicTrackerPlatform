@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/session.dart';
 import '../models/attendance_stats.dart';
+import '../models/assignment.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -22,8 +23,9 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'alu_assistant.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2, // Updated version to include assignments
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -40,6 +42,32 @@ class DatabaseHelper {
         isAttended INTEGER DEFAULT 0
       )
     ''');
+    
+    await db.execute('''
+      CREATE TABLE assignments (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        dueDate TEXT NOT NULL,
+        courseName TEXT NOT NULL,
+        priority TEXT NOT NULL,
+        isCompleted INTEGER DEFAULT 0
+      )
+    ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE assignments (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          dueDate TEXT NOT NULL,
+          courseName TEXT NOT NULL,
+          priority TEXT NOT NULL,
+          isCompleted INTEGER DEFAULT 0
+        )
+      ''');
+    }
   }
 
   // Create
@@ -264,5 +292,118 @@ class DatabaseHelper {
     );
     
     return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+  }
+
+  // ==================== ASSIGNMENT CRUD OPERATIONS ====================
+
+  /// Create - Insert new assignment
+  Future<int> insertAssignment(Assignment assignment) async {
+    final db = await database;
+    return db.insert('assignments', {
+      'id': assignment.id,
+      'title': assignment.title,
+      'dueDate': assignment.dueDate.toIso8601String(),
+      'courseName': assignment.courseName,
+      'priority': assignment.priority,
+      'isCompleted': assignment.isCompleted ? 1 : 0,
+    });
+  }
+
+  /// Read - Get all assignments sorted by due date
+  Future<List<Assignment>> getAssignments() async {
+    final db = await database;
+    final maps = await db.query('assignments', orderBy: 'dueDate ASC');
+    return List.generate(maps.length, (i) => Assignment.fromJson({
+      'id': maps[i]['id'],
+      'title': maps[i]['title'],
+      'dueDate': maps[i]['dueDate'],
+      'courseName': maps[i]['courseName'],
+      'priority': maps[i]['priority'],
+      'isCompleted': maps[i]['isCompleted'] == 1,
+    }));
+  }
+
+  /// Read - Get pending (incomplete) assignments
+  Future<List<Assignment>> getPendingAssignments() async {
+    final db = await database;
+    final maps = await db.query(
+      'assignments',
+      where: 'isCompleted = ?',
+      whereArgs: [0],
+      orderBy: 'dueDate ASC',
+    );
+    return List.generate(maps.length, (i) => Assignment.fromJson({
+      'id': maps[i]['id'],
+      'title': maps[i]['title'],
+      'dueDate': maps[i]['dueDate'],
+      'courseName': maps[i]['courseName'],
+      'priority': maps[i]['priority'],
+      'isCompleted': false,
+    }));
+  }
+
+  /// Read - Get assignments due in next 7 days
+  Future<List<Assignment>> getUpcomingAssignments() async {
+    final db = await database;
+    final now = DateTime.now();
+    final weekLater = now.add(const Duration(days: 7));
+    
+    final maps = await db.query(
+      'assignments',
+      where: 'dueDate >= ? AND dueDate <= ? AND isCompleted = ?',
+      whereArgs: [now.toIso8601String(), weekLater.toIso8601String(), 0],
+      orderBy: 'dueDate ASC',
+    );
+    return List.generate(maps.length, (i) => Assignment.fromJson({
+      'id': maps[i]['id'],
+      'title': maps[i]['title'],
+      'dueDate': maps[i]['dueDate'],
+      'courseName': maps[i]['courseName'],
+      'priority': maps[i]['priority'],
+      'isCompleted': false,
+    }));
+  }
+
+  /// Update - Update assignment details
+  Future<int> updateAssignment(Assignment assignment) async {
+    final db = await database;
+    return db.update(
+      'assignments',
+      {
+        'title': assignment.title,
+        'dueDate': assignment.dueDate.toIso8601String(),
+        'courseName': assignment.courseName,
+        'priority': assignment.priority,
+        'isCompleted': assignment.isCompleted ? 1 : 0,
+      },
+      where: 'id = ?',
+      whereArgs: [assignment.id],
+    );
+  }
+
+  /// Update - Toggle assignment completion status
+  Future<int> toggleAssignmentCompletion(String id, bool isCompleted) async {
+    final db = await database;
+    return db.update(
+      'assignments',
+      {'isCompleted': isCompleted ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Delete - Remove assignment
+  Future<int> deleteAssignment(String id) async {
+    final db = await database;
+    return db.delete('assignments', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Get count of pending assignments
+  Future<int> getPendingAssignmentCount() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM assignments WHERE isCompleted = 0'
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 }
